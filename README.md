@@ -41,7 +41,7 @@ Stock table plus charts of stock, sold and defective items by category.
 ## Setup
 
 ```bash
-git clone <your-repo-url>
+git clone https://github.com/Arpit1Sharma/IMS.git IMS
 cd IMS
 
 python -m venv venv
