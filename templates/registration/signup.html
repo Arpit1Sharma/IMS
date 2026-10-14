@@ -1,0 +1,84 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Sign Up</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+body {
+    background-image: url('{% static "images/OIP.jpeg" %}');
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center;
+    min-height: 100vh;
+}
+
+.container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.signup-box {
+    background: white;
+    max-width: 450px;
+    width: 100%;
+    border-radius: 20px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+form label {
+    font-weight: bold;
+}
+
+form input {
+    margin-top: 5px;
+}
+
+h2 {
+    font-weight: bold;
+    color: #333;
+}
+    </style>
+</head>
+<body>
+
+<div class="container">
+  <div class="signup-box">
+    <h2 class="text-center mb-4">Create Account</h2>
+    <form method="post">
+      {% csrf_token %}
+      
+      <div class="mb-3">
+        {{ form.username.label_tag }}
+        <input type="text" name="{{ form.username.name }}" class="form-control" value="{{ form.username.value|default:'' }}">
+        {{ form.username.errors }}
+      </div>
+
+      <div class="row mb-3">
+        <div class="col">
+          {{ form.password1.label_tag }}
+          <input type="password" name="{{ form.password1.name }}" class="form-control" value="{{ form.password1.value|default:'' }}">
+          {{ form.password1.errors }}
+        </div>
+        <div class="col">
+          {{ form.password2.label_tag }}
+          <input type="password" name="{{ form.password2.name }}" class="form-control" value="{{ form.password2.value|default:'' }}">
+          {{ form.password2.errors }}
+        </div>
+      </div>
+
+      <div class="d-grid gap-2">
+        <button type="submit" class="btn btn-primary">Sign Up</button>
+        <a href="{% url 'home' %}" class="btn btn-secondary">Back</a>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

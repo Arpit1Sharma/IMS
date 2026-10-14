@@ -1,0 +1,72 @@
+{% extends 'INVENTORY/index.html' %}
+{% block title %}Defective Items{% endblock %}
+{% block header %}Defective Items{% endblock %}
+{% block content %}
+<div class="container mt-4">
+    <div class="row mb-3">
+        <div class="col-md-4">
+            <div class="card text-bg-primary mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">Today</h5>
+                    <p class="card-text">{{ today_count }} defective items</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-bg-success mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">This Week</h5>
+                    <p class="card-text">{{ week_count }} defective items</p>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card text-bg-warning mb-3">
+                <div class="card-body">
+                    <h5 class="card-title">This Month</h5>
+                    <p class="card-text">{{ month_count }} defective items</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="row mb-3">
+        <div class="col-md-12">
+            <a href="{% url 'defective_item' %}?filter=all" class="btn {% if filter_type == 'all' %}btn-primary{% else %}btn-outline-primary{% endif %}">All</a>
+            <a href="{% url 'defective_item' %}?filter=daily" class="btn {% if filter_type == 'daily' %}btn-primary{% else %}btn-outline-primary{% endif %}">Today</a>
+            <a href="{% url 'defective_item' %}?filter=weekly" class="btn {% if filter_type == 'weekly' %}btn-primary{% else %}btn-outline-primary{% endif %}">This Week</a>
+            <a href="{% url 'defective_item' %}?filter=monthly" class="btn {% if filter_type == 'monthly' %}btn-primary{% else %}btn-outline-primary{% endif %}">This Month</a>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-md-12">
+            <h2 class="mb-4">Defective Items</h2>
+            {% if defective_items %}
+                <table class="table table-striped table-bordered">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Item Name</th>
+                            <th>Category</th>
+                            <th>Defective Quantity</th>
+                            <th>Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for defective in defective_items %}
+                        <tr>
+                            <td>{{ defective.item.name }}</td>
+                            <td>{{ defective.item.category.name }}</td>
+                            <td>{{ defective.quantity }}</td>
+                            <td>{{ defective.date|date:"Y-m-d H:i" }}</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            {% else %}
+                <div class="alert alert-warning text-center" role="alert">
+                    No defective items found for this period.
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

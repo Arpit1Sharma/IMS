@@ -1,0 +1,169 @@
+{% extends 'INVENTORY/index.html' %}
+
+{% block content %}
+<div class="container mt-4">
+    <h2 class="mb-4">Inventory Reports</h2>
+    <div class="btn-group mb-4">
+        <a href="{% url 'inventory_report' %}?filter=all" class="btn {% if filter_type == 'all' %}btn-primary{% else %}btn-outline-primary{% endif %}">All</a>
+        <a href="{% url 'inventory_report' %}?filter=daily" class="btn {% if filter_type == 'daily' %}btn-primary{% else %}btn-outline-primary{% endif %}">Today</a>
+        <a href="{% url 'inventory_report' %}?filter=weekly" class="btn {% if filter_type == 'weekly' %}btn-primary{% else %}btn-outline-primary{% endif %}">This Week</a>
+        <a href="{% url 'inventory_report' %}?filter=monthly" class="btn {% if filter_type == 'monthly' %}btn-primary{% else %}btn-outline-primary{% endif %}">This Month</a>
+    </div>
+    <div class="text-center mt-4">
+    <button class="btn btn-primary" type="button" data-bs-toggle="collapse" data-bs-target="#collapse1">
+        View Report
+    </button>
+    </div>
+    <div class="collapse" id="collapse1">
+    <div class="card card-body">
+    <h4>Current Stock</h4>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Sr. No.</th>
+                <th>Item Name</th>
+                <th>Category</th>
+                <th>Quantity</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for stock in stocks %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ stock.name }}</td>
+                <td>{{ stock.category.name }}</td>
+                <td>{{ stock.quantity }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" class="text-center">No stock data available.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="container mt-4">
+        <div class="row mb-5">
+            <div class="col-md-12">
+                <h4>Stock Distribution by Category</h4>
+                <canvas id="stockChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+    <h4>Sold Items</h4>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Sr. No.</th>
+                <th>Item Name</th>
+                <th>Category</th>
+                <th>Quantity</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sold in sold_items %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ sold.item.name }}</td>
+                <td>{{ sold.item.category.name }}</td>
+                <td>{{ sold.quantity }}</td>
+                <td>{{ sold.date|date:"Y-m-d" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-center">No sold data available.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="container mt-4">
+        <div class="row mb-5">
+            <div class="col-md-12">
+                <h4>Sold Items by Category</h4>
+                <canvas id="soldChart" height="100"></canvas>
+            </div>
+        </div>
+    </div>
+    <h4>Defective Items</h4>
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Sr. No.</th>
+                <th>Item Name</th>
+                <th>Category</th>
+                <th>Quantity</th>
+                <th>Date</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for d in defective_items %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ d.item.name }}</td>
+                <td>{{ d.item.category.name }}</td>
+                <td>{{ d.quantity }}</td>
+                <td>{{ d.date|date:"Y-m-d" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="text-center">No defective data available.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <div class="container mt-4">
+        <div class="row mb-5">
+            <div class="col-md-12">
+                <h4>Defective Items by Category</h4>
+                <canvas id="defectiveChart" height="100"></canvas>
+            </div>
+        </div> 
+    </div>
+</div>
+</div>
+</div>
+<div class="text-center mt-4">
+    <a href="{% url 'generate_inventory_pdf' %}?filter={{ filter_type }}" class="btn btn-success">Download Full Report (PDF)</a>
+</div>
+<script>
+    new Chart(document.getElementById('stockChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ categories|safe }},
+            datasets: [{
+                label: 'Stock Quantity',
+                data: {{ quantities|safe }},
+                backgroundColor: 'rgba(54, 162, 235, 0.8)',
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+    new Chart(document.getElementById('soldChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ sold_categories|safe }},
+            datasets: [{
+                label: 'Sold Quantity',
+                data: {{ sold_quantities|safe }},
+                backgroundColor: 'rgba(255, 99, 132, 0.8)',
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+    new Chart(document.getElementById('defectiveChart'), {
+        type: 'bar',
+        data: {
+            labels: {{ defective_categories|safe }},
+            datasets: [{
+                label: 'Defective Quantity',
+                data: {{ defective_quantities|safe }},
+                backgroundColor: 'rgba(255, 159, 64, 0.8)',
+            }]
+        },
+        options: {
+            responsive: true,
+            scales: { y: { beginAtZero: true } }
+        }
+    });
+</script>
+{% endblock %}

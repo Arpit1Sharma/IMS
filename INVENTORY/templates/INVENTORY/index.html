@@ -1,0 +1,294 @@
+{% load static %}
+
+<!doctype html>
+<html lang="en" data-bs-theme="light">
+  <head>
+    <meta charset="utf-8">
+    <title>{% block title %}Dashboard{% endblock %}</title>
+    <style>
+      .nav-item:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 24px rgba(85, 167, 8, 0.833);
+      }
+      .nav-link.active {
+        background-color: #0a8bd1;
+        color: #fff !important;
+        font-weight: bold;
+        border-radius: 5px;
+      }
+    </style>    
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/feather-icons/dist/feather.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  </head>
+  <body data-bs-spy="scroll">
+    <header class="navbar navbar-dark sticky-top bg-dark flex-md-nowrap p-0 shadow">
+      <a class="navbar-brand col-md-3 col-lg-2 me-0 px-3 fs-2" href="#">Inventory Management System</a>
+      <button class="navbar-toggler d-md-none collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#sidebarMenu">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+    </header>
+    <div class="container-fluid">
+      <div class="row">
+        <nav id="sidebarMenu" class="col-md-3 col-lg-2 d-md-block bg-light sidebar collapse">
+          <div class="position-sticky pt-3 sidebar-sticky">
+            <ul class="nav flex-column">
+              <li class="nav-item">
+                <a class="nav-link {% if request.path == '/inventory/' %}active{% endif %}" href="{% url 'Inventory' %}">
+                  <img src="{% static 'INVENTORY/house-door-fill.svg' %}" height="18"> Dashboard
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link {% if request.path == '/inventory/add/' %}active{% endif %}" href="{% url 'add_item' %}">
+                  <img src="{% static 'INVENTORY/bag-plus-fill.svg' %}" height="18"> Add Item
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link {% if request.path == '/inventory/remove/' %}active{% endif %}" href="{% url 'remove_item' %}">
+                  <img src="{% static 'INVENTORY/bag-plus-fill.svg' %}" height="18"> Remove Item
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link {% if request.path == '/inventory/sold/' %}active{% endif %}" href="{% url 'sold_item' %}">
+                  <img src="{% static 'INVENTORY/bag-check-fill.svg' %}" height="18"> Sold Item
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link {% if request.path == '/inventory/defective/' %}active{% endif %}" href="{% url 'defective_item' %}">
+                  <img src="{% static 'INVENTORY/bag-dash-fill.svg' %}" height="18"> Defective Item
+                </a>
+              </li>                            
+              <li class="nav-item">
+                <a class="nav-link {% if request.path == '/inventory/report/' %}active{% endif %}" href="{% url 'inventory_report' %}">
+                  <img src="{% static 'INVENTORY/graph-up.svg' %}" height="18"> Reports
+                </a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link" href="{% url 'logout' %}">
+              <form action="{% url 'logout' %}" method ="post">
+                {% csrf_token %}
+                <button type="submit" style="background:none;border:none;padding:0;color:rgba(0, 0, 255, 0.736);"><img src="{% static 'INVENTORY/box-arrow-left.svg' %}" height="18"> Logout</button>
+              </form>
+            </a>
+              </li>
+            </ul>
+          </div>
+        </nav>
+        <main class="col-md-9 ms-sm-auto col-lg-10 px-md-4">
+          <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+            <h1 class="h2">{% block header %}Dashboard Overview{% endblock %}</h1>
+          </div>
+          {% block content %}
+          <div class="container">
+            <div class="row">
+              <div class="col-md-12">
+                <h4>Stock Table</h4>
+                <table class="table table-striped table-bordered">
+                  <thead class="table-light">
+                    <tr>
+                      <th>Sr. No.</th>
+                      <th>Item Name</th>
+                      <th>Category</th>
+                      <th>Quantity</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {% for stock in stocks %}
+                    <tr>
+                      <td>{{ forloop.counter }}</td>
+                      <td>{{ stock.name }}</td>
+                      <td>{{ stock.category.name }}</td>
+                      <td>{{ stock.quantity }}</td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                      <td colspan="4" class="text-center">No stock available.</td>
+                    </tr>
+                    {% endfor %}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+            <hr class="my-4">
+            <div class="row mb-3">
+              <div class="col-md-12 text-start">
+                <a href="{% url 'Inventory' %}?filter=all" class="btn {% if filter_type == 'all' %}btn-primary{% else %}btn-outline-primary{% endif %}">All</a>
+                <a href="{% url 'Inventory' %}?filter=daily" class="btn {% if filter_type == 'daily' %}btn-primary{% else %}btn-outline-primary{% endif %}">Today</a>
+                <a href="{% url 'Inventory' %}?filter=weekly" class="btn {% if filter_type == 'weekly' %}btn-primary{% else %}btn-outline-primary{% endif %}">This Week</a>
+                <a href="{% url 'Inventory' %}?filter=monthly" class="btn {% if filter_type == 'monthly' %}btn-primary{% else %}btn-outline-primary{% endif %}">This Month</a>
+              </div>
+            </div>            
+            <div class="row">
+              <div class="col-md-12">
+                <h4>Stock Distribution by Category</h4>
+                <canvas id="stockChart" height="100"></canvas>
+              </div>
+            </div>
+            <hr class="my-4">
+            <div class="row">
+              <div class="col-md-12">
+                <h4>Sold Items by Category</h4>
+                <canvas id="soldChart" height="100"></canvas>
+              </div>
+            </div>
+            <hr class="my-4">
+            <div class="row">
+              <div class="col-md-12">
+                <h4>Defective Items by Category</h4>
+                <canvas id="defectiveChart" height="100"></canvas>
+              </div>
+            </div>
+          </div>
+          
+          <script>
+            var ctx1 = document.getElementById('stockChart').getContext('2d');
+            var ctx2 = document.getElementById('soldChart').getContext('2d');
+            var ctx3 = document.getElementById('defectiveChart').getContext('2d');
+          
+            const commonOptions = {
+              responsive: true,
+              plugins: {
+                legend: {
+                  labels: {
+                    font: {
+                      size: 14,
+                      weight: 'bold'
+                    },
+                    color: '#333'
+                  }
+                },
+                title: {
+                  display: true,
+                  font: {
+                    size: 20,
+                    weight: 'bold'
+                  },
+                  color: '#111'
+                },
+                tooltip: {
+                  backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                  titleFont: { size: 14 },
+                  bodyFont: { size: 12 },
+                  padding: 10
+                }
+              },
+              scales: {
+                x: {
+                  grid: {
+                    display: false
+                  },
+                  ticks: {
+                    font: {
+                      size: 14
+                    },
+                    color: '#333'
+                  }
+                },
+                y: {
+                  grid: {
+                    borderDash: [5, 5],
+                    color: 'rgba(0,0,0,0.1)'
+                  },
+                  ticks: {
+                    beginAtZero: true,
+                    font: {
+                      size: 14
+                    },
+                    color: '#333'
+                  }
+                }
+              },
+              animation: {
+                duration: 1500,
+                easing: 'easeOutBounce'
+              }
+            };
+            var stockChart = new Chart(ctx1, {
+              type: 'bar',
+              data: {
+                labels: {{ categories|safe }},
+                datasets: [{
+                  label: 'Stock Quantity',
+                  data: {{ quantities|safe }},
+                  backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                  borderColor: 'rgba(54, 162, 235, 1)',
+                  borderWidth: 2,
+                  borderRadius: 10,
+                  barPercentage: 0.6,
+                  categoryPercentage: 0.6
+                }]
+              },
+              options: {
+                ...commonOptions,
+                plugins: {
+                  ...commonOptions.plugins,
+                  title: {
+                    ...commonOptions.plugins.title,
+                    text: 'Stock Distribution by Category'
+                  }
+                }
+              }
+            });
+            var soldChart = new Chart(ctx2, {
+              type: 'bar',
+              data: {
+                labels: {{ sold_categories|safe }},
+                datasets: [{
+                  label: 'Sold Items Quantity',
+                  data: {{ sold_quantities|safe }},
+                  backgroundColor: 'rgba(255, 99, 132, 0.8)',
+                  borderColor: 'rgba(255, 99, 132, 1)',
+                  borderWidth: 2,
+                  borderRadius: 10,
+                  barPercentage: 0.6,
+                  categoryPercentage: 0.6
+                }]
+              },
+              options: {
+                ...commonOptions,
+                plugins: {
+                  ...commonOptions.plugins,
+                  title: {
+                    ...commonOptions.plugins.title,
+                    text: 'Sold Items by Category'
+                  }
+                }
+              }
+            });
+            var defectiveChart = new Chart(ctx3, {
+              type: 'bar',
+              data: {
+                labels: {{ defective_categories|safe }},
+                datasets: [{
+                  label: 'Defective Items Quantity',
+                  data: {{ defective_quantities|safe }},
+                  backgroundColor: 'rgba(255, 159, 64, 0.8)',
+                  borderColor: 'rgba(255, 159, 64, 1)',
+                  borderWidth: 2,
+                  borderRadius: 10,
+                  barPercentage: 0.6,
+                  categoryPercentage: 0.6
+                }]
+              },
+              options: {
+                ...commonOptions,
+                plugins: {
+                  ...commonOptions.plugins,
+                  title: {
+                    ...commonOptions.plugins.title,
+                    text: 'Defective Items by Category'
+                  }
+                }
+              }
+            });
+          </script>
+          {% endblock %}
+        </main>
+      </div>
+    </div>
+    <script>
+      feather.replace()
+    </script>
+  </body>
+</html>
